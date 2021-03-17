@@ -1,0 +1,32 @@
+version: '3.8'
+services:
+  sa_node:
+    image: node:14-alpine
+    volumes:
+      - ./:/home
+    working_dir: /home
+    depends_on:
+      - sa_sns
+      - sa_db
+    networks:
+      - sa_network
+
+  sa_sns:
+    image: s12v/sns
+    ports:
+      - '9911:9911'
+    networks:
+      - sa_network
+
+  sa_db:
+    image: amazon/dynamodb-local:latest
+    ports:
+      - '8000:8000'
+    networks:
+      - sa_network
+    command: ["-jar", "DynamoDBLocal.jar", "-sharedDb", "-inMemory"]
+
+networks:
+  sa_network:
+    name: sa_network
+    driver: bridge
