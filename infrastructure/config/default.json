@@ -1,0 +1,8 @@
+{
+  "logLevel": "ERROR",
+  "lambda": {
+    "timeoutSeconds": 15,
+    "scheduleMinutes": 1,
+    "memorySize": 512
+  }
+}

@@ -5,23 +5,39 @@
     "infrastructure": "bin/infrastructure.js"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc -p tsconfig.build.json",
     "watch": "tsc -w",
     "test": "jest",
-    "cdk": "cdk"
+    "lint": "eslint . --ext .ts",
+    "lint:fix": "eslint . --ext .ts --fix",
+    "cdk": "cdk",
+    "deploy": "cdk deploy --force --require-approval never"
   },
   "devDependencies": {
     "@aws-cdk/assert": "1.94.1",
+    "@types/config": "0.0.38",
     "@types/jest": "^26.0.10",
     "@types/node": "10.17.27",
+    "@typescript-eslint/eslint-plugin": "^4.18.0",
+    "@typescript-eslint/parser": "^4.18.0",
+    "aws-cdk": "1.94.1",
+    "eslint": "^7.22.0",
+    "eslint-config-standard": "^16.0.2",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-jest": "^24.3.2",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^4.3.1",
     "jest": "^26.4.2",
     "ts-jest": "^26.2.0",
-    "aws-cdk": "1.94.1",
     "ts-node": "^9.0.0",
     "typescript": "~3.9.7"
   },
   "dependencies": {
+    "@aws-cdk/aws-events": "^1.94.1",
+    "@aws-cdk/aws-events-targets": "^1.94.1",
+    "@aws-cdk/aws-lambda": "^1.94.1",
     "@aws-cdk/core": "1.94.1",
+    "config": "^3.3.6",
     "source-map-support": "^0.5.16"
   }
 }
