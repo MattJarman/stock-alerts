@@ -1,7 +1,13 @@
 {
-  "name": "stock-alerts-app",
+  "name": "stock-alerts",
   "version": "1.0.0",
-  "scripts": {},
+  "scripts": {
+    "test:unit": "jest",
+    "test:unit:coverage": "jest --coverage",
+    "lint": "eslint . --ext .ts",
+    "lint:fix": "eslint . --ext .ts --fix",
+    "build": "tsc -p tsconfig.build.json"
+  },
   "devDependencies": {
     "@types/jest": "^26.0.20",
     "@typescript-eslint/eslint-plugin": "^4.18.0",
