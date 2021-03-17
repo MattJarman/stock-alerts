@@ -2,7 +2,7 @@
   "logLevel": "ERROR",
   "lambda": {
     "timeoutSeconds": 15,
-    "scheduleMinutes": 1,
+    "schedule": "cron(* 9-21 * * *)",
     "memorySize": 512
   }
 }
