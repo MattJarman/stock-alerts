@@ -75,7 +75,7 @@ fi
 if [ -z "$PROFILE" ]
 then
   warn "No profile set. Defaulting to '$DEFAULT_PROFILE'."
-  PROFILE=DEFAULT_PROFILE
+  PROFILE=$DEFAULT_PROFILE
 fi
 
 export CDK_DEPLOY_ACCOUNT=$ACCOUNT_NUMBER
@@ -86,4 +86,4 @@ log "Building lambda function code..."
 (cd "$ROOT_DIR/app" && npm run build)
 
 log "Deploying..."
-(cd "$ROOT_DIR/infrastructure" && npm run cdk destroy --profile="$PROFILE")
+(cd "$ROOT_DIR/infrastructure" && npm run cdk destroy -- --profile="$PROFILE")
