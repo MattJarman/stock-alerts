@@ -3,8 +3,8 @@ services:
   sa_node:
     image: node:14-alpine
     volumes:
-      - ./:/home
-    working_dir: /home
+      - ./:/node
+    working_dir: /node
     depends_on:
       - sa_sns
       - sa_db

@@ -13,7 +13,7 @@ interface InfrastructureStackProps extends StackProps {
   }
   lambda: {
     timeoutSeconds: number
-    scheduleMinutes: number
+    schedule: string
     memorySize: number
     name: string
   }
@@ -47,7 +47,7 @@ export class InfrastructureStack extends Stack {
     })
 
     const rule = new Rule(this, 'stock-alerts-schedule', {
-      schedule: Schedule.rate(Duration.minutes(props.lambda.scheduleMinutes))
+      schedule: Schedule.expression(props.lambda.schedule)
     })
 
     rule.addTarget(new LambdaFunction(lambda))
