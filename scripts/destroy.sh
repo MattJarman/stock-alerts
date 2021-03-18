@@ -82,8 +82,5 @@ export CDK_DEPLOY_ACCOUNT=$ACCOUNT_NUMBER
 export CDK_DEPLOY_REGION=$REGION
 export NODE_ENV=$ENVIRONMENT
 
-log "Building lambda function code..."
-(cd "$ROOT_DIR/app" && npm run build)
-
-log "Deploying..."
+log "Destroying..."
 (cd "$ROOT_DIR/infrastructure" && npm run cdk destroy --profile="$PROFILE")
