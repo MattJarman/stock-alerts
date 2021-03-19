@@ -85,5 +85,11 @@ export NODE_ENV=$ENVIRONMENT
 log "Building lambda function code..."
 (cd "$ROOT_DIR/app" && npm run build)
 
+log "Installing production dependencies"
+(cd "$ROOT_DIR/app" && npm prune --production)
+
 log "Deploying..."
 (cd "$ROOT_DIR/infrastructure" && npm run deploy -- --profile="$PROFILE")
+
+log "Reinstalling dev dependencies..."
+(cd "$ROOT_DIR/app" && npm ci)

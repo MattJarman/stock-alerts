@@ -23,8 +23,7 @@ new InfrastructureStack(app, stackName, {
   lambda: {
     timeoutSeconds: timeoutSeconds,
     schedule: schedule,
-    memorySize: memorySize,
-    name: `l-${env.charAt(0)}-${regionShortName}-stock-alerts`
+    memorySize: memorySize
   },
   env: {
     account: process.env.CDK_DEPLOY_ACCOUNT,

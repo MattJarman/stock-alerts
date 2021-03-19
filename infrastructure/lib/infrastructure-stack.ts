@@ -1,7 +1,9 @@
-import { Construct, Duration, Stack, StackProps } from '@aws-cdk/core'
+import { Construct, Duration, RemovalPolicy, Stack, StackProps } from '@aws-cdk/core'
 import { AssetCode, Function, Runtime } from '@aws-cdk/aws-lambda'
 import { Rule, Schedule } from '@aws-cdk/aws-events'
 import { LambdaFunction } from '@aws-cdk/aws-events-targets'
+import { AttributeType, BillingMode, Table } from '@aws-cdk/aws-dynamodb'
+import Helpers from './Helpers'
 
 export type LogLevel = 'ERROR' | 'WARNING' | 'LOG' | 'INFO' | 'DEBUG'
 export type Env = 'test' | 'dev' | 'prod'
@@ -15,7 +17,6 @@ interface InfrastructureStackProps extends StackProps {
     timeoutSeconds: number
     schedule: string
     memorySize: number
-    name: string
   }
 }
 
@@ -23,7 +24,27 @@ export class InfrastructureStack extends Stack {
   constructor (scope: Construct, id: string, props: InfrastructureStackProps) {
     super(scope, id, props)
 
-    const lambda = new Function(this, 'stock-alerts', {
+    if (!props.env?.region) {
+      throw new Error('AWS Region is required.')
+    }
+
+    const regionShortName = Helpers.getRegionShortName(props.env.region)
+
+    const stockAlertsTable = new Table(this, 'stock-alerts-table', {
+      partitionKey: {
+        name: 'product',
+        type: AttributeType.STRING
+      },
+      sortKey: {
+        name: 'source',
+        type: AttributeType.STRING
+      },
+      tableName: `ddb-${props.app.env.charAt(0)}-${regionShortName}-stock-alerts`,
+      billingMode: BillingMode.PAY_PER_REQUEST,
+      removalPolicy: RemovalPolicy.DESTROY
+    })
+
+    const lambda = new Function(this, 'stock-alerts-lambda', {
       code: new AssetCode('../app/', {
         exclude: [
           '*.ts',
@@ -39,9 +60,10 @@ export class InfrastructureStack extends Stack {
       runtime: Runtime.NODEJS_14_X,
       environment: {
         NODE_ENV: props.app.env,
-        LOG_LEVEL: props.app.logLevel
+        LOG_LEVEL: props.app.logLevel,
+        STOCK_ALERTS_TABLE_NAME: stockAlertsTable.tableName
       },
-      functionName: props.lambda.name,
+      functionName: `l-${props.app.env.charAt(0)}-${regionShortName}-stock-alerts`,
       timeout: Duration.seconds(props.lambda.timeoutSeconds),
       memorySize: props.lambda.memorySize
     })
@@ -51,5 +73,6 @@ export class InfrastructureStack extends Stack {
     })
 
     rule.addTarget(new LambdaFunction(lambda))
+    stockAlertsTable.grantReadWriteData(lambda)
   }
 }
