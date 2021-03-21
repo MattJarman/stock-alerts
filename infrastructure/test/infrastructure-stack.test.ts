@@ -1,4 +1,4 @@
-import { expect as expectCDK, haveResource } from '@aws-cdk/assert'
+import { Capture, expect as expectCDK, haveResource } from '@aws-cdk/assert'
 import { App } from '@aws-cdk/core'
 import { InfrastructureStack } from '../lib/infrastructure-stack'
 
@@ -12,9 +12,8 @@ describe('Test Infrastructure', () => {
       },
       lambda: {
         timeoutSeconds: 15,
-        scheduleMinutes: 1,
-        memorySize: 512,
-        name: 'l-t-ew1-stock-alerts'
+        schedule: 'cron(* 9-21 * * ? *)',
+        memorySize: 512
       },
       env: {
         account: '000000000',
@@ -30,7 +29,8 @@ describe('Test Infrastructure', () => {
         Environment: {
           Variables: {
             NODE_ENV: 'test',
-            LOG_LEVEL: 'ERROR'
+            LOG_LEVEL: 'ERROR',
+            STOCK_ALERTS_TABLE_NAME: Capture.anyType().capture()
           }
         }
       })
@@ -38,7 +38,7 @@ describe('Test Infrastructure', () => {
 
     expectCDK(stack).to(
       haveResource('AWS::Events::Rule', {
-        ScheduleExpression: 'rate(1 minute)'
+        ScheduleExpression: 'cron(* 9-21 * * ? *)'
       })
     )
   })

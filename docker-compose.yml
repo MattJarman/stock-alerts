@@ -8,11 +8,14 @@ services:
     depends_on:
       - sa_sns
       - sa_db
+    environment:
+      NODE_ENV: test
+      STOCK_ALERTS_TABLE_NAME: ddb-t-ew1-stock-alerts
     networks:
       - sa_network
 
   sa_sns:
-    image: s12v/sns
+    image: s12v/sns:latest
     ports:
       - '9911:9911'
     networks:
