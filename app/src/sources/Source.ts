@@ -4,14 +4,17 @@ import { SourceProps, Source as SourceInterface, SourceResult } from '../interfa
 
 export default abstract class Source implements SourceInterface {
   abstract baseUrl: string
-  abstract productUrl: string
   abstract selector: string
   abstract selectorEvaluation: boolean
   protected readonly props: SourceProps
+  protected readonly productUrl: string
+  protected readonly productName: string
   protected browser: Browser | false = false
 
   protected constructor (props: SourceProps) {
     this.props = props
+    this.productUrl = props.productUrl
+    this.productName = props.productName
   }
 
   protected async launch (): Promise<Browser> {
@@ -39,5 +42,14 @@ export default abstract class Source implements SourceInterface {
     return `${this.baseUrl}/${this.productUrl}`
   }
 
-  abstract find(): Promise<SourceResult>
+  public async find (): Promise<SourceResult> {
+    const inStock = await this.evaluate()
+    await this.close()
+
+    return {
+      product: this.productName,
+      url: this.getUrl(),
+      inStock: inStock
+    }
+  }
 }

@@ -13,8 +13,6 @@ export interface SourceResult {
 
 export interface Source {
   baseUrl: string
-  productUrl: string
   selector: string
   selectorEvaluation: boolean
-  find(): Promise<SourceResult>
 }

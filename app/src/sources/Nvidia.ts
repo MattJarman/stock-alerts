@@ -1,10 +1,10 @@
 import { SourceProps } from '../interfaces/sources/Source'
 import Source from './Source'
 
-export default class Amazon extends Source {
-  readonly baseUrl = 'https://www.amazon.co.uk'
-  readonly selector: string = '#buy-now-button'
-  readonly selectorEvaluation: boolean = true
+export default class Nvidia extends Source {
+  readonly baseUrl = 'https://shop.nvidia.com/en-gb'
+  readonly selector: string = '.stock-grey-out'
+  readonly selectorEvaluation: boolean = false
 
   public constructor (props: SourceProps) {
     super(props)
