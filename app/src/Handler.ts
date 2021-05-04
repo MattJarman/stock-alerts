@@ -8,9 +8,9 @@ export const handler = async (): Promise<boolean> => {
   })
 
   const promises: Promise<SourceResult>[] = [source.find()]
+  const results = await Promise.all(promises)
 
-  const result = await Promise.all(promises)
-  console.log(result)
+  // TODO: Send SNS notification
 
-  return true
+  return !results.every(result => !result.inStock)
 }
