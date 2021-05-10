@@ -13,6 +13,6 @@ export interface SourceResult {
 
 export interface Source {
   baseUrl: string
-  selector: string
-  selectorEvaluation: boolean
+  defaultSelector: string
+  defaultSelectorEvaluation: boolean
 }

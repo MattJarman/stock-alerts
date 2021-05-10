@@ -7,7 +7,7 @@ export const handler = async (): Promise<boolean> => {
     productUrl: 'geforce/store/gpu/?page=1&limit=9&locale=en-gb&category=GPU&gpu=RTX 3080'
   })
 
-  const promises: Promise<SourceResult>[] = [source.find()]
+  const promises: Promise<SourceResult>[] = [source.find().finally(() => source.close())]
   const results = await Promise.all(promises)
 
   // TODO: Send SNS notification
