@@ -20,7 +20,7 @@ describe('Test StockAlertRepository', () => {
   })
 
   describe('.constructor()', () => {
-    test('It throws an error if the STOCK_ALERTS_TABLE_NAME env variable is not defined', () => {
+    it('throws an error if the STOCK_ALERTS_TABLE_NAME env variable is not defined', () => {
       expect(() => {
         process.env.STOCK_ALERTS_TABLE_NAME = ''
 
@@ -31,7 +31,7 @@ describe('Test StockAlertRepository', () => {
   })
 
   describe('.get()', () => {
-    test('It formats and returns the StockAlert on a successful request', async () => {
+    it('formats and returns the StockAlert on a successful request', async () => {
       const output: GetItemOutput = {
         ConsumedCapacity: undefined,
         Item: {
@@ -53,7 +53,7 @@ describe('Test StockAlertRepository', () => {
       })
     })
 
-    test('It returns false if the StockAlert was not found', async () => {
+    it('returns false if the StockAlert was not found', async () => {
       const output: GetItemOutput = {
         ConsumedCapacity: undefined,
         Item: undefined
@@ -69,7 +69,7 @@ describe('Test StockAlertRepository', () => {
   })
 
   describe('.update()', () => {
-    test('It updates the last_sent date of a StockAlert with a provided date', async () => {
+    it('updates the last_sent date of a StockAlert with a provided date', async () => {
       const repo = new StockAlertRepository()
       const lastSent = new Date('2020-01-01')
       await repo.update('PS5', 'Amazon', lastSent)
@@ -85,7 +85,7 @@ describe('Test StockAlertRepository', () => {
       )
     })
 
-    test('It updates the last_sent date of a StockAlert to now if no date is provided', async () => {
+    it('updates the last_sent date of a StockAlert to now if no date is provided', async () => {
       const repo = new StockAlertRepository()
       await repo.update('PS5', 'Amazon')
 

@@ -4,17 +4,37 @@ import { SourceProps, Source as SourceInterface, SourceResult } from '../interfa
 
 export default abstract class Source implements SourceInterface {
   abstract baseUrl: string
-  abstract selector: string
-  abstract selectorEvaluation: boolean
+  abstract defaultSelector: string
+  abstract defaultSelectorEvaluation: boolean
   protected readonly props: SourceProps
   protected readonly productUrl: string
   protected readonly productName: string
+  protected readonly selector?: string
+  protected readonly selectorEvaluation?: boolean
   protected browser: Browser | false = false
 
-  protected constructor (props: SourceProps) {
+  public constructor (props: SourceProps) {
     this.props = props
     this.productUrl = props.productUrl
     this.productName = props.productName
+    this.selector = props.selector
+    this.selectorEvaluation = props.selectorEvaluation
+  }
+
+  public async find (): Promise<SourceResult> {
+    const inStock = await this.evaluate()
+
+    return {
+      product: this.productName,
+      url: this.getUrl(),
+      inStock: inStock
+    }
+  }
+
+  public async close (): Promise<void> {
+    if (this.browser) {
+      await this.browser.close()
+    }
   }
 
   protected async launch (): Promise<Browser> {
@@ -29,27 +49,18 @@ export default abstract class Source implements SourceInterface {
     this.browser = await this.launch()
     const page = await this.browser.newPage()
     await page.goto(this.getUrl())
-    return (await page.$(this.selector) !== null) === this.selectorEvaluation
-  }
-
-  protected async close (): Promise<void> {
-    if (this.browser) {
-      await this.browser.close()
-    }
+    return (await page.$(this.getSelector()) !== null) === this.getSelectorEvaluation()
   }
 
   protected getUrl (): string {
     return `${this.baseUrl}/${this.productUrl}`
   }
 
-  public async find (): Promise<SourceResult> {
-    const inStock = await this.evaluate()
-    await this.close()
+  protected getSelector (): string {
+    return this.selector ?? this.defaultSelector
+  }
 
-    return {
-      product: this.productName,
-      url: this.getUrl(),
-      inStock: inStock
-    }
+  protected getSelectorEvaluation (): boolean {
+    return this.selectorEvaluation ?? this.defaultSelectorEvaluation
   }
 }
