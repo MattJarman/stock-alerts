@@ -27,6 +27,7 @@ export default abstract class Source implements SourceInterface {
     return {
       product: this.productName,
       url: this.getUrl(),
+      source: this.constructor.name,
       inStock: inStock
     }
   }

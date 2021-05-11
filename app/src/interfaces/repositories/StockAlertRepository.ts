@@ -3,3 +3,8 @@ export interface StockAlert {
   source: string
   'last_sent': string
 }
+
+export interface BatchGetProductInput {
+  product: string
+  source: string
+}

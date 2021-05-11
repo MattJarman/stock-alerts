@@ -64,6 +64,7 @@ describe('Test Source', () => {
       expect(result).toEqual({
         product: product,
         url: expectedProductUrl,
+        source: 'TestSource',
         inStock: scenario.expected
       })
     })
