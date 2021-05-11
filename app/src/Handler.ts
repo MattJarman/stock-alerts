@@ -1,4 +1,3 @@
-import { StockAlert } from './interfaces/repositories/StockAlertRepository'
 import { SourceResult } from './interfaces/sources/Source'
 import config from 'config'
 import sources from './Sources'
