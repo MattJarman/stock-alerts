@@ -1,12 +1,11 @@
 import {
-  GetItemCommand,
-  GetItemCommandInput,
+  BatchGetItemCommand,
+  BatchGetItemCommandInput,
   UpdateItemCommand,
-  UpdateItemCommandInput,
-  UpdateItemOutput
+  UpdateItemInput
 } from '@aws-sdk/client-dynamodb'
-import { unmarshall } from '@aws-sdk/util-dynamodb'
-import { StockAlert } from '../interfaces/repositories/StockAlertRepository'
+import { marshall, unmarshall } from '@aws-sdk/util-dynamodb'
+import { BatchGetProductInput, StockAlert } from '../interfaces/repositories/StockAlertRepository'
 import DB from './DB'
 
 export default class StockAlertRepository extends DB {
@@ -21,47 +20,43 @@ export default class StockAlertRepository extends DB {
     this.tableName = process.env.STOCK_ALERTS_TABLE_NAME
   }
 
-  public async get (product: string, source: string): Promise<StockAlert | false> {
-    const params: GetItemCommandInput = {
-      TableName: this.tableName,
-      Key: {
-        product: {
-          S: product
-        },
-        source: {
-          S: source
+  public async batchGet (products: BatchGetProductInput[]): Promise<StockAlert[]> {
+    const marshalledProducts = products.map(product => marshall(product))
+
+    const params: BatchGetItemCommandInput = {
+      RequestItems: {
+        [this.tableName]: {
+          Keys: marshalledProducts
         }
       }
     }
 
-    const { Item } = await this.db.send(new GetItemCommand(params))
+    const { Responses } = await this.db.send(new BatchGetItemCommand(params))
 
-    if (!Item) {
+    if (!Responses) {
+      return []
+    }
+
+    return Responses[this.tableName].map(response => unmarshall(response)) as StockAlert[]
+  }
+
+  public async update (product: BatchGetProductInput, lastSent = new Date()): Promise<StockAlert | false> {
+    const marshalledProduct = marshall(product)
+
+    const params: UpdateItemInput = {
+      TableName: this.tableName,
+      Key: marshalledProduct,
+      UpdateExpression: 'SET last_sent = :lastSent',
+      ExpressionAttributeValues: marshall({ ':lastSent': lastSent.toISOString() }),
+      ReturnValues: 'ALL_NEW'
+    }
+
+    const { Attributes } = await this.db.send(new UpdateItemCommand(params))
+
+    if (!Attributes) {
       return false
     }
 
-    return unmarshall(Item) as StockAlert
-  }
-
-  public async update (product: string, source: string, lastSent: Date = new Date()): Promise<UpdateItemOutput> {
-    const params: UpdateItemCommandInput = {
-      TableName: this.tableName,
-      Key: {
-        product: {
-          S: product
-        },
-        source: {
-          S: source
-        }
-      },
-      UpdateExpression: 'SET last_sent = :last_sent',
-      ExpressionAttributeValues: {
-        ':last_sent': {
-          S: lastSent.toISOString()
-        }
-      }
-    }
-
-    return this.db.send(new UpdateItemCommand(params))
+    return unmarshall(Attributes) as StockAlert
   }
 }

@@ -1,22 +1,20 @@
-import MockDate from 'mockdate'
-import { GetItemOutput, UpdateItemCommand } from '@aws-sdk/client-dynamodb'
+import { BatchGetItemOutput, UpdateItemOutput } from '@aws-sdk/client-dynamodb'
 import StockAlertRepository from '../../../src/repositories/StockAlertRepository'
 
-const testDate = new Date('2021-01-01')
-MockDate.set(testDate)
+const tableName = 'ddb-t-ew1-stock-alerts'
 
 const sendMock = jest.fn()
 jest.mock('@aws-sdk/client-dynamodb', () => ({
   DynamoDBClient: jest.fn().mockImplementation(() => ({
     send: sendMock
   })),
-  GetItemCommand: jest.fn(),
+  BatchGetItemCommand: jest.fn(),
   UpdateItemCommand: jest.fn()
 }))
 
 describe('Test StockAlertRepository', () => {
   beforeEach(() => {
-    process.env.STOCK_ALERTS_TABLE_NAME = 'ddb-t-ew1-stock-alerts'
+    process.env.STOCK_ALERTS_TABLE_NAME = tableName
   })
 
   describe('.constructor()', () => {
@@ -30,74 +28,110 @@ describe('Test StockAlertRepository', () => {
     })
   })
 
-  describe('.get()', () => {
-    it('formats and returns the StockAlert on a successful request', async () => {
-      const output: GetItemOutput = {
-        ConsumedCapacity: undefined,
-        Item: {
-          last_sent: { S: '2021-03-20T18:36:05.851Z' },
-          product: { S: 'PS5' },
-          source: { S: 'Amazon' }
+  describe('.batchGet()', () => {
+    it('formats and returns the StockAlerts on a successful request', async () => {
+      const expected = {
+        lastSent: '2021-03-20T18:36:05.851Z',
+        product: '3080',
+        source: 'Nvidia'
+      }
+
+      const output: BatchGetItemOutput = {
+        Responses: {
+          [tableName]: [
+            {
+              last_sent: { S: expected.lastSent },
+              product: { S: expected.product },
+              source: { S: expected.source }
+            }
+          ]
         }
       }
 
       sendMock.mockReturnValue(output)
 
       const repo = new StockAlertRepository()
-      const actual = await repo.get('PS5', 'Amazon')
+      const actual = await repo.batchGet([{ product: expected.product, source: expected.source }])
 
-      expect(actual).toEqual({
-        product: 'PS5',
-        source: 'Amazon',
-        last_sent: '2021-03-20T18:36:05.851Z'
-      })
+      expect(actual).toEqual([
+        {
+          product: expected.product,
+          source: expected.source,
+          last_sent: expected.lastSent
+        }
+      ])
     })
 
-    it('returns false if the StockAlert was not found', async () => {
-      const output: GetItemOutput = {
-        ConsumedCapacity: undefined,
-        Item: undefined
+    it('returns an empty array if Responses is undefined', async () => {
+      const output: BatchGetItemOutput = {
+        Responses: undefined
       }
 
       sendMock.mockReturnValue(output)
 
       const repo = new StockAlertRepository()
-      const actual = await repo.get('PS5', 'Amazon')
+      const actual = await repo.batchGet([{ product: '3080', source: 'Nvidia' }])
 
-      expect(actual).toEqual(false)
+      expect(actual).toEqual([])
     })
   })
 
   describe('.update()', () => {
-    it('updates the last_sent date of a StockAlert with a provided date', async () => {
-      const repo = new StockAlertRepository()
-      const lastSent = new Date('2020-01-01')
-      await repo.update('PS5', 'Amazon', lastSent)
+    it('updates a product\'s last_sent if a date is provided', async () => {
+      const date = new Date()
+      const expected = {
+        last_sent: date.toISOString(),
+        product: '3080',
+        source: 'Nvidia'
+      }
 
-      expect(UpdateItemCommand).toHaveBeenCalledWith(
-        expect.objectContaining({
-          ExpressionAttributeValues: {
-            ':last_sent': {
-              S: lastSent.toISOString()
-            }
-          }
-        })
-      )
+      const output: UpdateItemOutput = {
+        Attributes: {
+          last_sent: { S: expected.last_sent },
+          product: { S: expected.product },
+          source: { S: expected.source }
+        }
+      }
+
+      sendMock.mockReturnValueOnce(output)
+
+      const repo = new StockAlertRepository()
+      const actual = await repo.update({ product: '3080', source: 'Nvidia' }, date)
+
+      expect(actual).toEqual(expected)
     })
 
-    it('updates the last_sent date of a StockAlert to now if no date is provided', async () => {
-      const repo = new StockAlertRepository()
-      await repo.update('PS5', 'Amazon')
+    it('updates a product\'s last_sent and uses the current date if none provided', async () => {
+      const date = new Date()
+      const expected = {
+        last_sent: date.toISOString(),
+        product: '3080',
+        source: 'Nvidia'
+      }
 
-      expect(UpdateItemCommand).toHaveBeenCalledWith(
-        expect.objectContaining({
-          ExpressionAttributeValues: {
-            ':last_sent': {
-              S: testDate.toISOString()
-            }
-          }
-        })
-      )
+      const output: UpdateItemOutput = {
+        Attributes: {
+          last_sent: { S: expected.last_sent },
+          product: { S: expected.product },
+          source: { S: expected.source }
+        }
+      }
+
+      sendMock.mockReturnValueOnce(output)
+
+      const repo = new StockAlertRepository()
+      const actual = await repo.update({ product: '3080', source: 'Nvidia' })
+
+      expect(actual).toEqual(expected)
+    })
+
+    it('returns false if no Attributes are returned', async () => {
+      sendMock.mockReturnValueOnce({})
+
+      const repo = new StockAlertRepository()
+      const actual = await repo.update({ product: '3080', source: 'Nvidia' })
+
+      expect(actual).toEqual(false)
     })
   })
 })

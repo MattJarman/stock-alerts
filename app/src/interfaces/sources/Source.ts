@@ -7,6 +7,7 @@ export interface SourceProps {
 
 export interface SourceResult {
   product: string
+  source: string
   inStock: boolean
   url: string
 }

@@ -3,18 +3,29 @@ import sources from '../../src/Sources'
 import Amazon from '../../src/sources/Amazon'
 import Nvidia from '../../src/sources/Nvidia'
 import Source from '../../src/sources/Source'
+import StockAlertRepository from '../../src/repositories/StockAlertRepository'
 import Mock = jest.Mock;
 
 let sourcesMock = sources as unknown as Array<Source>
 jest.mock('../../src/Sources', () => [])
 
-const SourceMock = Source as unknown as Mock
 jest.mock('../../src/sources/Source')
+const SourceMock = Source as unknown as Mock
 const findMock = jest.fn()
 const closeMock = jest.fn()
 SourceMock.mockImplementation(() => ({
   find: findMock,
   close: closeMock
+}))
+
+jest.mock('../../src/repositories/StockAlertRepository')
+const StockAlertsRepositoryMock = StockAlertRepository as unknown as Mock
+const batchGetMock = jest.fn()
+const updateMock = jest.fn()
+StockAlertsRepositoryMock.mockImplementation(() => ({
+  batchGet: batchGetMock,
+  update: updateMock
+
 }))
 
 describe('Test Handler', () => {
@@ -30,27 +41,48 @@ describe('Test Handler', () => {
       }),
       new Amazon({
         productName: 'PS5',
-        productUrl: ''
+        productUrl: 'PS5'
       })
     ]
 
     findMock.mockResolvedValueOnce({
       product: '3080',
       url: 'https://shop.nvidia.com/en-gb/3080',
+      source: 'Nvidia',
       inStock: true
     })
 
     findMock.mockResolvedValueOnce({
       product: 'PS5',
       url: 'https://www.amazon.co.uk/PS5',
+      source: 'Amazon',
       inStock: false
+    })
+
+    batchGetMock.mockResolvedValueOnce([
+      {
+        product: '3080',
+        source: 'Nvidia',
+        last_sent: new Date(1)
+      }
+    ])
+
+    updateMock.mockResolvedValueOnce({
+      product: '3080',
+      source: 'Nvidia',
+      last_sent: new Date(1)
     })
 
     sources.forEach(source => sourcesMock.push(source))
     const actual = await handler()
-    expect(actual).toEqual(true)
 
     expect(closeMock).toHaveBeenCalledTimes(sources.length)
+    expect(batchGetMock).toHaveBeenCalledWith([{
+      product: '3080',
+      source: 'Nvidia'
+    }])
+    expect(actual).toEqual(true)
+    expect(updateMock).toHaveBeenCalledTimes(1)
   })
 
   it('returns false if no stock was found for any product', async () => {
@@ -61,27 +93,30 @@ describe('Test Handler', () => {
       }),
       new Amazon({
         productName: 'PS5',
-        productUrl: ''
+        productUrl: 'PS5'
       })
     ]
 
     findMock.mockResolvedValueOnce({
       product: '3080',
       url: 'https://shop.nvidia.com/en-gb/3080',
+      source: 'Nvidia',
       inStock: false
     })
 
     findMock.mockResolvedValueOnce({
       product: 'PS5',
       url: 'https://www.amazon.co.uk/PS5',
+      source: 'Amazon',
       inStock: false
     })
 
     sources.forEach(source => sourcesMock.push(source))
 
     const actual = await handler()
-    expect(actual).toEqual(false)
 
     expect(closeMock).toHaveBeenCalledTimes(sources.length)
+    expect(batchGetMock).toHaveBeenCalledTimes(0)
+    expect(actual).toEqual(false)
   })
 })

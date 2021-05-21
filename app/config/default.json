@@ -1,3 +1,6 @@
 {
-  "dynamodb": {}
+  "dynamodb": {},
+  "alerts": {
+    "periodInMinutes": 360
+  }
 }
