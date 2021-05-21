@@ -23,7 +23,7 @@ export const handler = async (): Promise<boolean> => {
 
   // TODO: Send SNS notification
 
-  await Promise.all(toSend.map(product => repository.update(product)))
+  await Promise.all(toSend.map(result => repository.update(result.product, result.source)))
 
   return true
 }

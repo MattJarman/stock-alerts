@@ -96,7 +96,7 @@ describe('Test StockAlertRepository', () => {
       sendMock.mockReturnValueOnce(output)
 
       const repo = new StockAlertRepository()
-      const actual = await repo.update({ product: '3080', source: 'Nvidia' }, date)
+      const actual = await repo.update('3080', 'Nvidia', date)
 
       expect(actual).toEqual(expected)
     })
@@ -120,7 +120,7 @@ describe('Test StockAlertRepository', () => {
       sendMock.mockReturnValueOnce(output)
 
       const repo = new StockAlertRepository()
-      const actual = await repo.update({ product: '3080', source: 'Nvidia' })
+      const actual = await repo.update('3080', 'Nvidia')
 
       expect(actual).toEqual(expected)
     })
@@ -129,7 +129,7 @@ describe('Test StockAlertRepository', () => {
       sendMock.mockReturnValueOnce({})
 
       const repo = new StockAlertRepository()
-      const actual = await repo.update({ product: '3080', source: 'Nvidia' })
+      const actual = await repo.update('3080', 'Nvidia')
 
       expect(actual).toEqual(false)
     })

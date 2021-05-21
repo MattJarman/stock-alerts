@@ -40,12 +40,10 @@ export default class StockAlertRepository extends DB {
     return Responses[this.tableName].map(response => unmarshall(response)) as StockAlert[]
   }
 
-  public async update (product: BatchGetProductInput, lastSent = new Date()): Promise<StockAlert | false> {
-    const marshalledProduct = marshall(product)
-
+  public async update (product: string, source: string, lastSent = new Date()): Promise<StockAlert | false> {
     const params: UpdateItemInput = {
       TableName: this.tableName,
-      Key: marshalledProduct,
+      Key: marshall({ product: product, source: source }),
       UpdateExpression: 'SET last_sent = :lastSent',
       ExpressionAttributeValues: marshall({ ':lastSent': lastSent.toISOString() }),
       ReturnValues: 'ALL_NEW'
