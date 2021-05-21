@@ -5,7 +5,7 @@ import {
   UpdateItemInput
 } from '@aws-sdk/client-dynamodb'
 import { marshall, unmarshall } from '@aws-sdk/util-dynamodb'
-import { BatchGetProductInput, StockAlert } from '../interfaces/repositories/StockAlertRepository'
+import { BatchGetStockAlertInput, StockAlert } from '../interfaces/repositories/StockAlertRepository'
 import DB from './DB'
 
 export default class StockAlertRepository extends DB {
@@ -20,7 +20,7 @@ export default class StockAlertRepository extends DB {
     this.tableName = process.env.STOCK_ALERTS_TABLE_NAME
   }
 
-  public async batchGet (products: BatchGetProductInput[]): Promise<StockAlert[]> {
+  public async batchGet (products: BatchGetStockAlertInput[]): Promise<StockAlert[]> {
     const marshalledProducts = products.map(product => marshall(product))
 
     const params: BatchGetItemCommandInput = {
