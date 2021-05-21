@@ -1,7 +1,11 @@
-import { BatchGetItemCommand, BatchGetItemCommandInput } from '@aws-sdk/client-dynamodb'
+import {
+  BatchGetItemCommand,
+  BatchGetItemCommandInput,
+  UpdateItemCommand,
+  UpdateItemInput
+} from '@aws-sdk/client-dynamodb'
 import { marshall, unmarshall } from '@aws-sdk/util-dynamodb'
 import { BatchGetProductInput, StockAlert } from '../interfaces/repositories/StockAlertRepository'
-import { SourceResult } from '../interfaces/sources/Source'
 import DB from './DB'
 
 export default class StockAlertRepository extends DB {
@@ -36,22 +40,23 @@ export default class StockAlertRepository extends DB {
     return Responses[this.tableName].map(response => unmarshall(response)) as StockAlert[]
   }
 
-  public static getAlertsToSend (
-    productsInStock: SourceResult[],
-    stockAlerts: StockAlert[],
-    periodInMinutes: number
-  ): SourceResult[] {
-    return productsInStock.filter(result => {
-      const alertIndex = stockAlerts.findIndex(alert => alert.source === result.source && alert.product === result.product)
+  public async update (product: BatchGetProductInput, lastSent = new Date()): Promise<StockAlert | false> {
+    const marshalledProduct = marshall(product)
 
-      if (alertIndex === -1) {
-        return true
-      }
+    const params: UpdateItemInput = {
+      TableName: this.tableName,
+      Key: marshalledProduct,
+      UpdateExpression: 'SET last_sent = :lastSent',
+      ExpressionAttributeValues: marshall({ lastSent: lastSent.toISOString() }),
+      ReturnValues: 'ALL_NEW'
+    }
 
-      const lastSent = new Date(stockAlerts[alertIndex].last_sent)
-      const shouldSendAfter = new Date(lastSent.getTime() + periodInMinutes * 60000)
+    const { Attributes } = await this.db.send(new UpdateItemCommand(params))
 
-      return new Date() > shouldSendAfter
-    })
+    if (!Attributes) {
+      return false
+    }
+
+    return unmarshall(Attributes) as StockAlert
   }
 }

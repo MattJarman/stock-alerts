@@ -21,8 +21,11 @@ SourceMock.mockImplementation(() => ({
 jest.mock('../../src/repositories/StockAlertRepository')
 const StockAlertsRepositoryMock = StockAlertRepository as unknown as Mock
 const batchGetMock = jest.fn()
+const updateMock = jest.fn()
 StockAlertsRepositoryMock.mockImplementation(() => ({
-  batchGet: batchGetMock
+  batchGet: batchGetMock,
+  update: updateMock
+
 }))
 
 describe('Test Handler', () => {
@@ -56,13 +59,19 @@ describe('Test Handler', () => {
       inStock: false
     })
 
-    batchGetMock.mockResolvedValue([
+    batchGetMock.mockResolvedValueOnce([
       {
         product: '3080',
         source: 'Nvidia',
         last_sent: new Date(1)
       }
     ])
+
+    updateMock.mockResolvedValueOnce({
+      product: '3080',
+      source: 'Nvidia',
+      last_sent: new Date(1)
+    })
 
     sources.forEach(source => sourcesMock.push(source))
     const actual = await handler()
@@ -73,6 +82,7 @@ describe('Test Handler', () => {
       source: 'Nvidia'
     }])
     expect(actual).toEqual(true)
+    expect(updateMock).toHaveBeenCalledTimes(1)
   })
 
   it('returns false if no stock was found for any product', async () => {

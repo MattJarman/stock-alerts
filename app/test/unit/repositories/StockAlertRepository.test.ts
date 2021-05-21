@@ -1,18 +1,15 @@
-import MockDate from 'mockdate'
-import { BatchGetItemOutput } from '@aws-sdk/client-dynamodb'
-import { StockAlert } from '../../../src/interfaces/repositories/StockAlertRepository'
+import { BatchGetItemOutput, UpdateItemOutput } from '@aws-sdk/client-dynamodb'
 import StockAlertRepository from '../../../src/repositories/StockAlertRepository'
 
 const tableName = 'ddb-t-ew1-stock-alerts'
-const testDate = new Date('2021-01-01')
-MockDate.set(testDate)
 
 const sendMock = jest.fn()
 jest.mock('@aws-sdk/client-dynamodb', () => ({
   DynamoDBClient: jest.fn().mockImplementation(() => ({
     send: sendMock
   })),
-  BatchGetItemCommand: jest.fn()
+  BatchGetItemCommand: jest.fn(),
+  UpdateItemCommand: jest.fn()
 }))
 
 describe('Test StockAlertRepository', () => {
@@ -65,7 +62,7 @@ describe('Test StockAlertRepository', () => {
       ])
     })
 
-    it('returns an empty array if Reponses is undefined', async () => {
+    it('returns an empty array if Responses is undefined', async () => {
       const output: BatchGetItemOutput = {
         Responses: undefined
       }
@@ -79,62 +76,62 @@ describe('Test StockAlertRepository', () => {
     })
   })
 
-  describe('.getAlertsToSend()', () => {
-    it('returns product if no stock alert with matching product and source is found in DB', () => {
-      const periodInMinutes = 360
-      const productsInStock = [{
+  describe('.update()', () => {
+    it('updates a product\'s last_sent if a date is provided', async () => {
+      const date = new Date()
+      const expected = {
+        last_sent: date.toISOString(),
         product: '3080',
-        source: 'Nvidia',
-        inStock: true,
-        url: ''
-      }]
+        source: 'Nvidia'
+      }
 
-      const stockAlerts: StockAlert[] = []
-      const expected = productsInStock
+      const output: UpdateItemOutput = {
+        Attributes: {
+          last_sent: { S: expected.last_sent },
+          product: { S: expected.product },
+          source: { S: expected.source }
+        }
+      }
 
-      const result = StockAlertRepository.getAlertsToSend(productsInStock, stockAlerts, periodInMinutes)
-      expect(result).toEqual(expected)
+      sendMock.mockReturnValueOnce(output)
+
+      const repo = new StockAlertRepository()
+      const actual = await repo.update({ product: '3080', source: 'Nvidia' }, date)
+
+      expect(actual).toEqual(expected)
     })
 
-    it('returns product if a stock alert with a matching product and source was found, and the time to send alert after is less than the current time', () => {
-      const periodInMinutes = 360
-      const productsInStock = [{
+    it('updates a product\'s last_sent and uses the current date if none provided', async () => {
+      const date = new Date()
+      const expected = {
+        last_sent: date.toISOString(),
         product: '3080',
-        source: 'Nvidia',
-        inStock: true,
-        url: ''
-      }]
+        source: 'Nvidia'
+      }
 
-      const stockAlerts = [{
-        product: '3080',
-        source: 'Nvidia',
-        last_sent: new Date(1).toISOString()
-      }]
-      const expected = productsInStock
+      const output: UpdateItemOutput = {
+        Attributes: {
+          last_sent: { S: expected.last_sent },
+          product: { S: expected.product },
+          source: { S: expected.source }
+        }
+      }
 
-      const result = StockAlertRepository.getAlertsToSend(productsInStock, stockAlerts, periodInMinutes)
-      expect(result).toEqual(expected)
+      sendMock.mockReturnValueOnce(output)
+
+      const repo = new StockAlertRepository()
+      const actual = await repo.update({ product: '3080', source: 'Nvidia' })
+
+      expect(actual).toEqual(expected)
     })
 
-    it('does not return product if a stock alert with a matching product and source was found, but the time to send alert after is greater than the current time', () => {
-      const periodInMinutes = 360
-      const productsInStock = [{
-        product: '3080',
-        source: 'Nvidia',
-        inStock: true,
-        url: ''
-      }]
+    it('returns false if no Attributes are returned', async () => {
+      sendMock.mockReturnValueOnce({})
 
-      const stockAlerts = [{
-        product: '3080',
-        source: 'Nvidia',
-        last_sent: new Date(testDate.getTime() - (periodInMinutes - 1) * 60000).toISOString()
-      }]
+      const repo = new StockAlertRepository()
+      const actual = await repo.update({ product: '3080', source: 'Nvidia' })
 
-      const expected: StockAlert[] = []
-
-      const result = StockAlertRepository.getAlertsToSend(productsInStock, stockAlerts, periodInMinutes)
-      expect(result).toEqual(expected)
+      expect(actual).toEqual(false)
     })
   })
 })
