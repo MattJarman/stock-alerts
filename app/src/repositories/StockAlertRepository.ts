@@ -47,7 +47,7 @@ export default class StockAlertRepository extends DB {
       TableName: this.tableName,
       Key: marshalledProduct,
       UpdateExpression: 'SET last_sent = :lastSent',
-      ExpressionAttributeValues: marshall({ lastSent: lastSent.toISOString() }),
+      ExpressionAttributeValues: marshall({ ':lastSent': lastSent.toISOString() }),
       ReturnValues: 'ALL_NEW'
     }
 

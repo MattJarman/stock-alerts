@@ -4,19 +4,15 @@
   "scripts": {
     "test:unit": "jest",
     "test:unit:coverage": "jest --coverage",
-    "test:e2e": "./node_modules/.bin/cucumber-js",
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint . --ext .ts --fix",
     "build": "tsc -p tsconfig.build.json"
   },
   "devDependencies": {
-    "@cucumber/pretty-formatter": "^1.0.0-alpha.0",
     "@types/config": "0.0.38",
     "@types/jest": "^26.0.20",
     "@typescript-eslint/eslint-plugin": "^4.18.0",
     "@typescript-eslint/parser": "^4.18.0",
-    "cucumber": "^7.0.0-rc.0",
-    "cucumber-tsflow": "^4.0.0-rc.1",
     "eslint": "^7.22.0",
     "eslint-config-standard": "^16.0.2",
     "eslint-plugin-import": "^2.22.1",
