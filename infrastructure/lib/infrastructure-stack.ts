@@ -2,7 +2,7 @@ import { Topic } from '@aws-cdk/aws-sns'
 import { Construct, Duration, RemovalPolicy, Stack, StackProps } from '@aws-cdk/core'
 import { AssetCode, Function, Runtime } from '@aws-cdk/aws-lambda'
 import { Rule, Schedule } from '@aws-cdk/aws-events'
-import { LambdaFunction, SnsTopic } from '@aws-cdk/aws-events-targets'
+import { LambdaFunction } from '@aws-cdk/aws-events-targets'
 import { AttributeType, BillingMode, Table } from '@aws-cdk/aws-dynamodb'
 import Helpers from './Helpers'
 

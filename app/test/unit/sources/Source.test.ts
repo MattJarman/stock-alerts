@@ -1,3 +1,4 @@
+import chromium from 'chrome-aws-lambda'
 import Source from '../../../src/sources/Source'
 
 const gotoMock = jest.fn()
@@ -94,6 +95,27 @@ describe('Test Source', () => {
       await source.close()
 
       expect(closeMock).toHaveBeenCalledTimes(0)
+    })
+  })
+
+  describe('.setBrowserInstance()', () => {
+    it('sets the browser instance', async () => {
+      const source = new TestSource({
+        productName: 'apple',
+        productUrl: 'http://localhost'
+      })
+
+      const browser = await chromium.puppeteer.launch()
+
+      // We're using the mock above, so we want to make sure the .launch() call is not counted below when
+      // setting our expectations
+      browserMock.mockReset()
+
+      source.setBrowserInstance(browser)
+      await source.find()
+
+      expect(browser.newPage).toHaveBeenCalled()
+      expect(browserMock).toHaveBeenCalledTimes(0)
     })
   })
 })
