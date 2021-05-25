@@ -14,13 +14,13 @@
     "deploy": "cdk deploy --force --require-approval never"
   },
   "devDependencies": {
-    "@aws-cdk/assert": "1.94.1",
+    "@aws-cdk/assert": "^1.105.0",
     "@types/config": "0.0.38",
     "@types/jest": "^26.0.10",
     "@types/node": "10.17.27",
     "@typescript-eslint/eslint-plugin": "^4.18.0",
     "@typescript-eslint/parser": "^4.18.0",
-    "aws-cdk": "1.94.1",
+    "aws-cdk": "^1.105.0",
     "eslint": "^7.22.0",
     "eslint-config-standard": "^16.0.2",
     "eslint-plugin-import": "^2.22.1",
