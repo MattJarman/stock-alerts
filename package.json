@@ -1,5 +1,0 @@
-{
-  "dependencies": {
-    "@aws-cdk/aws-sns": "^1.105.0"
-  }
-}
