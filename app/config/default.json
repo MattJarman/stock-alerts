@@ -1,5 +1,6 @@
 {
   "dynamodb": {},
+  "sns": {},
   "alerts": {
     "periodInMinutes": 360
   }

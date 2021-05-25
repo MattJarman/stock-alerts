@@ -5,7 +5,7 @@ import {
   UpdateItemInput
 } from '@aws-sdk/client-dynamodb'
 import { marshall, unmarshall } from '@aws-sdk/util-dynamodb'
-import { BatchGetProductInput, StockAlert } from '../interfaces/repositories/StockAlertRepository'
+import { BatchGetStockAlertInput, StockAlert } from '../interfaces/repositories/StockAlertRepository'
 import DB from './DB'
 
 export default class StockAlertRepository extends DB {
@@ -20,7 +20,7 @@ export default class StockAlertRepository extends DB {
     this.tableName = process.env.STOCK_ALERTS_TABLE_NAME
   }
 
-  public async batchGet (products: BatchGetProductInput[]): Promise<StockAlert[]> {
+  public async batchGet (products: BatchGetStockAlertInput[]): Promise<StockAlert[]> {
     const marshalledProducts = products.map(product => marshall(product))
 
     const params: BatchGetItemCommandInput = {
@@ -40,12 +40,10 @@ export default class StockAlertRepository extends DB {
     return Responses[this.tableName].map(response => unmarshall(response)) as StockAlert[]
   }
 
-  public async update (product: BatchGetProductInput, lastSent = new Date()): Promise<StockAlert | false> {
-    const marshalledProduct = marshall(product)
-
+  public async update (product: string, source: string, lastSent = new Date()): Promise<StockAlert | false> {
     const params: UpdateItemInput = {
       TableName: this.tableName,
-      Key: marshalledProduct,
+      Key: marshall({ product: product, source: source }),
       UpdateExpression: 'SET last_sent = :lastSent',
       ExpressionAttributeValues: marshall({ ':lastSent': lastSent.toISOString() }),
       ReturnValues: 'ALL_NEW'
