@@ -27,6 +27,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.8.1",
+    "@aws-sdk/client-sns": "^3.16.0",
     "@aws-sdk/util-dynamodb": "^3.8.1",
     "chrome-aws-lambda": "^8.0.0",
     "config": "^3.3.6",

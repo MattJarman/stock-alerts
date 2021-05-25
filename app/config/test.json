@@ -1,6 +1,5 @@
 {
   "dynamodb": {
-    "endpoint": "http://sa_db:8000",
     "region": "local",
     "credentials": {
       "accessKeyId": "abc",

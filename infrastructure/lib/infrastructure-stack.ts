@@ -1,7 +1,8 @@
+import { Topic } from '@aws-cdk/aws-sns'
 import { Construct, Duration, RemovalPolicy, Stack, StackProps } from '@aws-cdk/core'
 import { AssetCode, Function, Runtime } from '@aws-cdk/aws-lambda'
 import { Rule, Schedule } from '@aws-cdk/aws-events'
-import { LambdaFunction } from '@aws-cdk/aws-events-targets'
+import { LambdaFunction, SnsTopic } from '@aws-cdk/aws-events-targets'
 import { AttributeType, BillingMode, Table } from '@aws-cdk/aws-dynamodb'
 import Helpers from './Helpers'
 
@@ -44,6 +45,10 @@ export class InfrastructureStack extends Stack {
       removalPolicy: RemovalPolicy.DESTROY
     })
 
+    const topic = new Topic(this, 'stock-alerts-topic', {
+      topicName: `sns-${props.app.env.charAt(0)}-${regionShortName}-stock-alerts`
+    })
+
     const lambda = new Function(this, 'stock-alerts-lambda', {
       code: new AssetCode('../app/', {
         exclude: [
@@ -61,7 +66,8 @@ export class InfrastructureStack extends Stack {
       environment: {
         NODE_ENV: props.app.env,
         LOG_LEVEL: props.app.logLevel,
-        STOCK_ALERTS_TABLE_NAME: stockAlertsTable.tableName
+        STOCK_ALERTS_TABLE_NAME: stockAlertsTable.tableName,
+        STOCK_ALERTS_SNS_TOPIC: topic.topicArn
       },
       functionName: `l-${props.app.env.charAt(0)}-${regionShortName}-stock-alerts`,
       timeout: Duration.seconds(props.lambda.timeoutSeconds),
@@ -74,5 +80,6 @@ export class InfrastructureStack extends Stack {
 
     rule.addTarget(new LambdaFunction(lambda))
     stockAlertsTable.grantReadWriteData(lambda)
+    topic.grantPublish(lambda)
   }
 }
