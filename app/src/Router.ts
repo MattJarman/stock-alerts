@@ -19,7 +19,7 @@ export const router = (sources: Source[]) => {
 
     logger.debug(`Finished creating new browser instance. Setting browser instance for ${sources.length} source(s).`)
     sources.forEach(source => source.setBrowserInstance(browser))
-    logger.debug('Finished setting browser instance for sources')
+    logger.debug('Finished setting browser instance for source(s).')
 
     logger.debug('Checking sources for products in stock.')
     const promises = sources.map(source => source.find())
