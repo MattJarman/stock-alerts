@@ -46,7 +46,7 @@ export const router = (sources: Source[]) => {
     logger.debug('Determining alerts to be sent.')
     const periodInMinutes: number = config.get('alerts.periodInMinutes')
     const toSend = StockAlertsHelper.getAlertsToSend(inStockProducts, alerts, periodInMinutes)
-    logger.debug(`Done determining alerts to sent.\r\nAlerts${JSON.stringify(toSend)}`)
+    logger.debug(`Done determining alerts to send.\r\nAlerts${JSON.stringify(toSend)}`)
 
     logger.debug('Sending alerts.')
     const sender = new StockAlertsSender()
