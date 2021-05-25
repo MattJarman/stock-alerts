@@ -32,6 +32,10 @@ export default abstract class Source implements SourceInterface {
     }
   }
 
+  public setBrowserInstance (browser: Browser): void {
+    this.browser = browser
+  }
+
   public async close (): Promise<void> {
     if (this.browser) {
       await this.browser.close()
@@ -47,7 +51,10 @@ export default abstract class Source implements SourceInterface {
   }
 
   protected async evaluate (): Promise<boolean> {
-    this.browser = await this.launch()
+    if (!this.browser) {
+      this.browser = await this.launch()
+    }
+
     const page = await this.browser.newPage()
     await page.goto(this.getUrl())
     return (await page.$(this.getSelector()) !== null) === this.getSelectorEvaluation()

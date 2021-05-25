@@ -6,6 +6,13 @@ import StockAlertRepository from '../../src/repositories/StockAlertRepository'
 import StockAlertsSender from '../../src/helpers/StockAlertsSender'
 import Mock = jest.Mock;
 
+const browserMock = jest.fn()
+const browserCloseMock = jest.fn()
+jest.mock('puppeteer', () => ({
+  launch: browserMock.mockImplementation(() => ({
+    close: browserCloseMock
+  }))
+}))
 jest.mock('../../src/helpers/Logger')
 jest.mock('../../src/repositories/StockAlertRepository')
 const StockAlertsRepositoryMock = StockAlertRepository as unknown as Mock
@@ -19,10 +26,10 @@ StockAlertsRepositoryMock.mockImplementation(() => ({
 jest.mock('../../src/sources/Source')
 const SourceMock = Source as unknown as Mock
 const findMock = jest.fn()
-const closeMock = jest.fn()
+const setBrowserInstanceMock = jest.fn()
 SourceMock.mockImplementation(() => ({
   find: findMock,
-  close: closeMock
+  setBrowserInstance: setBrowserInstanceMock
 }))
 
 jest.mock('../../src/helpers/StockAlertsSender')
@@ -75,7 +82,8 @@ describe('Test Router', () => {
       })
     ])()
 
-    expect(closeMock).toHaveBeenCalledTimes(2)
+    expect(setBrowserInstanceMock).toHaveBeenCalledTimes(2)
+    expect(browserCloseMock).toHaveBeenCalled()
     expect(batchGetMock).toHaveBeenCalledWith([{
       product: '3080',
       source: 'Nvidia'
@@ -109,7 +117,8 @@ describe('Test Router', () => {
       })
     ])()
 
-    expect(closeMock).toHaveBeenCalledTimes(1)
+    expect(setBrowserInstanceMock).toHaveBeenCalledTimes(1)
+    expect(browserCloseMock).toHaveBeenCalled()
     expect(batchGetMock).toHaveBeenCalledWith([{
       product: '3080',
       source: 'Nvidia'
@@ -144,7 +153,8 @@ describe('Test Router', () => {
       })
     ])()
 
-    expect(closeMock).toHaveBeenCalledTimes(2)
+    expect(setBrowserInstanceMock).toHaveBeenCalledTimes(2)
+    expect(browserCloseMock).toHaveBeenCalled()
     expect(batchGetMock).toHaveBeenCalledTimes(0)
     expect(actual).toEqual(false)
   })

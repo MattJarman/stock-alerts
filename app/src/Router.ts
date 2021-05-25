@@ -1,3 +1,4 @@
+import chromium from 'chrome-aws-lambda'
 import config from 'config'
 import Logger from './helpers/Logger'
 import StockAlertsHelper from './helpers/StockAlertsHelper'
@@ -9,10 +10,20 @@ export const router = (sources: Source[]) => {
   return async (): Promise<boolean> => {
     const logger = new Logger()
 
-    logger.debug(`Checking sources for products in stock.\r\n${JSON.stringify(sources)}`)
-    // TODO: Reuse browser instance
-    const promises = sources.map(source => source.find().finally(() => source.close()))
-    const results = await Promise.all(promises)
+    logger.debug('Creating new browser instance.')
+    const browser = await chromium.puppeteer.launch({
+      defaultViewport: chromium.defaultViewport,
+      executablePath: await chromium.executablePath,
+      headless: chromium.headless
+    })
+
+    logger.debug(`Finished creating new browser instance. Setting browser instance for ${sources.length} source(s).`)
+    sources.forEach(source => source.setBrowserInstance(browser))
+    logger.debug('Finished setting browser instance for sources')
+
+    logger.debug('Checking sources for products in stock.')
+    const promises = sources.map(source => source.find())
+    const results = await Promise.all(promises).finally(async () => await browser.close())
     logger.debug(`Done checking for products in stock.\r\nResults: ${JSON.stringify(results)}`)
 
     const inStockProducts = results.filter(result => result.inStock)
