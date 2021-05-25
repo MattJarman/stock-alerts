@@ -44,9 +44,11 @@ export default abstract class Source implements SourceInterface {
 
   protected async launch (): Promise<Browser> {
     return chromium.puppeteer.launch({
+      args: chromium.args,
       defaultViewport: chromium.defaultViewport,
       executablePath: await chromium.executablePath,
-      headless: chromium.headless
+      headless: chromium.headless,
+      ignoreHTTPSErrors: true
     })
   }
 

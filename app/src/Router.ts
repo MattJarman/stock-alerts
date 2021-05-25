@@ -12,9 +12,11 @@ export const router = (sources: Source[]) => {
 
     logger.debug('Creating new browser instance.')
     const browser = await chromium.puppeteer.launch({
+      args: chromium.args,
       defaultViewport: chromium.defaultViewport,
       executablePath: await chromium.executablePath,
-      headless: chromium.headless
+      headless: chromium.headless,
+      ignoreHTTPSErrors: true
     })
 
     logger.debug(`Finished creating new browser instance. Setting browser instance for ${sources.length} source(s).`)
