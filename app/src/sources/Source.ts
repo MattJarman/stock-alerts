@@ -1,3 +1,4 @@
+import config from 'config'
 import { Browser } from 'puppeteer-core'
 import chromium from 'chrome-aws-lambda'
 import { SourceProps, Source as SourceInterface, SourceResult } from '../interfaces/sources/Source'
@@ -58,6 +59,7 @@ export default abstract class Source implements SourceInterface {
     }
 
     const page = await this.browser.newPage()
+    await page.setUserAgent(config.get('browser.userAgent'))
     await page.goto(this.getUrl())
     return (await page.$(this.getSelector()) !== null) === this.getSelectorEvaluation()
   }

@@ -3,6 +3,7 @@ import Source from '../../../src/sources/Source'
 
 const gotoMock = jest.fn()
 const selectorMock = jest.fn()
+const setUserAgent = jest.fn()
 const closeMock = jest.fn()
 jest.mock('puppeteer', () => ({
   launch: browserMock
@@ -11,7 +12,8 @@ jest.mock('puppeteer', () => ({
 const browserMock = jest.fn().mockImplementation(() => ({
   newPage: jest.fn().mockImplementation(() => ({
     goto: gotoMock,
-    $: selectorMock
+    $: selectorMock,
+    setUserAgent: setUserAgent
   })),
   close: closeMock
 }))
@@ -62,6 +64,7 @@ describe('Test Source', () => {
 
       const result = await source.find()
       expect(gotoMock).toHaveBeenCalledWith(expectedProductUrl)
+      expect(setUserAgent).toHaveBeenCalled()
       expect(result).toEqual({
         product: product,
         url: expectedProductUrl,
