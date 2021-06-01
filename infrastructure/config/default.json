@@ -3,6 +3,6 @@
   "lambda": {
     "timeoutSeconds": 15,
     "schedule": "cron(* 9-21 * * ? *)",
-    "memorySize": 1024
+    "memorySize": 640
   }
 }
