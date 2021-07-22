@@ -1,6 +1,11 @@
 # Stock Alerts
 A Lambda function to check for stock updates and send alerts to the user.
 
+<p align="center">
+  <img src="readme/stock-alerts.png">
+</p>
+
+
 ## Overview
 The project is split into two different parts: [app](https://github.com/MattJarman/stock-alerts/tree/main/app)
 and [infrastructure](https://github.com/MattJarman/stock-alerts/tree/main/infrastructure).
